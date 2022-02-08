@@ -1,0 +1,2 @@
+CREATE TABLE police_station (id INT(12),area VARCHAR(50),phone_no INT(10),PRIMARY KEY(id));
+ insert into police_station values(1,'AAAA',8759963254),(2,'ABABA',4563217891),(3,'QWERT',3698521478),(4,'ASDFGH',759963254),(5,'QASDFTY',759963254);

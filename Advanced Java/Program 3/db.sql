@@ -1,0 +1,1 @@
+CREATE TABLE Bank (id INT(12),name VARCHAR(50),balence INT(10),PRIMARY KEY(id));
