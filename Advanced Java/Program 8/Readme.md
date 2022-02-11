@@ -1,0 +1,3 @@
+# Program 8
+
+Write a “SetCookies” servlet class to create six cookies. Three cookies to have the default expiration date, meaning that they should exist only until the user next restarts the browser. The other three cookies to use setMaxAge() to stipulate that they should exist for the next hour, regardless of whether the user restarts the browser or reboots the computer to initiate a new browsing session.
