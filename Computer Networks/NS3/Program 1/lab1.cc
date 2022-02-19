@@ -6,7 +6,9 @@
 #include "ns3/traffic-control-module.h"
 #include "ns3/flow-monitor-module.h"
 
+
 using namespace ns3;
+
 int
 main (int argc, char *argv[])
 {
@@ -24,7 +26,7 @@ main (int argc, char *argv[])
   NetDeviceContainer devices01;
   devices01 = pointToPoint.Install (nodes.Get(0),nodes.Get(1));
   
-    NetDeviceContainer devices12;
+  NetDeviceContainer devices12;
   devices12 = pointToPoint.Install (nodes.Get(1),nodes.Get(2));
 
   InternetStackHelper stack;
@@ -58,6 +60,7 @@ main (int argc, char *argv[])
   ApplicationContainer apps;
 
   InetSocketAddress rmt (interfaces12.GetAddress (1), port);
+  rmt.SetTos (0xb8);
   AddressValue remoteAddress (rmt);
   onoff.SetAttribute ("Remote", remoteAddress);
   apps.Add (onoff.Install (nodes.Get (0)));
@@ -74,16 +77,13 @@ main (int argc, char *argv[])
   std::map<FlowId, FlowMonitor::FlowStats> stats = monitor->GetFlowStats ();
   std::cout << std::endl << "*** Flow monitor statistics ***" << std::endl;
   
-  for(std::map<FlowId, FlowMonitor::FlowStats>::const_iterator iter=stats.begin();iter != stats.end(); iter++)
+  for(std::map<FlowId, FlowMonitor::FlowStats>::const_iterator iter = stats.begin() ; iter != stats.end() ; iter++)
   {
-        Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow(iter->first);
-        std::cout<< "  Flow ID  " << iter->first << "  src Addr  "  << t.sourceAddress  <<  "  dest Addr  "  << t.destinationAddress  <<  std::endl; 
-        std::cout << "  Tx Packets:   " << iter->second.txPackets << std::endl;
-        std::cout << "  Rx Packets:   " << iter->second.rxPackets << std::endl;
-        std::cout << "  Lost Packets:   " << iter->second.lostPackets << std::endl;
-        std::cout << "  Throughput: " << iter->second.rxBytes * 8.0 / (iter->second.timeLastRxPacket.GetSeconds () - iter->second.timeFirstRxPacket.GetSeconds ()) / 1000000 << " Kbps" << std::endl;
+    Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow(iter->first);
+    std::cout << " Flow Id : " << iter->first << " src Addr " << t.sourceAddress << " dst Addr " << t.destinationAddress << std::endl;
+    std::cout << " Lost Packets : " << iter->second.lostPackets << std::endl;
   }
-  
+
   Simulator::Destroy ();
 
   return 0;
