@@ -12,6 +12,7 @@ int
 main (int argc, char *argv[])
 {
   double simulationTime = 10; //seconds
+  std::string transportProt = "Tcp";
   std::string socketType = "ns3::UdpSocketFactory";
 
   NodeContainer nodes;
@@ -30,26 +31,26 @@ main (int argc, char *argv[])
   
   NetDeviceContainer devices23;
   devices23 = pointToPoint.Install (nodes.Get(2),nodes.Get(3));
-  
+
   InternetStackHelper stack;
-stack.Install (nodes);
+  stack.Install (nodes);
 
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.0");
 
   Ipv4InterfaceContainer interfaces02 = address.Assign (devices02);
   
-   address.SetBase ("10.1.2.0", "255.255.255.0");
+  address.SetBase ("10.1.2.0", "255.255.255.0");
 
   Ipv4InterfaceContainer interfaces12 = address.Assign (devices12);
   
-   address.SetBase ("10.1.3.0", "255.255.255.0");
+  address.SetBase ("10.1.3.0", "255.255.255.0");
 
   Ipv4InterfaceContainer interfaces23 = address.Assign (devices23);
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables();
   
-  //Udp Flow
+  //UdpFlow
   uint16_t port = 7;
   Address localAddress (InetSocketAddress (Ipv4Address::GetAny (), port));
   PacketSinkHelper packetSinkHelper (socketType, localAddress);
@@ -58,6 +59,7 @@ stack.Install (nodes);
   sinkApp.Start (Seconds (0.0));
   sinkApp.Stop (Seconds (simulationTime + 0.1));
 
+
   OnOffHelper onoff (socketType, Ipv4Address::GetAny ());
   onoff.SetAttribute ("OnTime",  StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
   onoff.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
@@ -65,21 +67,23 @@ stack.Install (nodes);
   ApplicationContainer apps;
 
   InetSocketAddress rmt (interfaces23.GetAddress (1), port);
+  rmt.SetTos (0xb8);
   AddressValue remoteAddress (rmt);
   onoff.SetAttribute ("Remote", remoteAddress);
-  apps.Add (onoff.Install (nodes.Get (0)));
+  apps.Add (onoff.Install (nodes.Get (1)));
   apps.Start (Seconds (1.0));
   apps.Stop (Seconds (simulationTime + 0.1));
   
-    //Tcp Flow
-  uint16_t port_tcp = 9;
+  //TcpFlow
   socketType = "ns3::TcpSocketFactory";
+  uint16_t port_tcp = 9;
   Address localAddress_tcp (InetSocketAddress (Ipv4Address::GetAny (), port_tcp));
   PacketSinkHelper packetSinkHelper_tcp (socketType, localAddress_tcp);
   ApplicationContainer sinkApp_tcp = packetSinkHelper_tcp.Install (nodes.Get (3));
 
   sinkApp_tcp.Start (Seconds (0.0));
   sinkApp_tcp.Stop (Seconds (simulationTime + 0.1));
+
 
   OnOffHelper onoff_tcp (socketType, Ipv4Address::GetAny ());
   onoff_tcp.SetAttribute ("OnTime",  StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
@@ -88,9 +92,10 @@ stack.Install (nodes);
   ApplicationContainer apps_tcp;
 
   InetSocketAddress rmt_tcp (interfaces23.GetAddress (1), port_tcp);
+  rmt_tcp.SetTos (0xb8);
   AddressValue remoteAddress_tcp (rmt_tcp);
   onoff_tcp.SetAttribute ("Remote", remoteAddress_tcp);
-  apps_tcp.Add (onoff_tcp.Install (nodes.Get (1)));
+  apps_tcp.Add (onoff_tcp.Install (nodes.Get (0)));
   apps_tcp.Start (Seconds (1.0));
   apps_tcp.Stop (Seconds (simulationTime + 0.1));
 
@@ -106,12 +111,11 @@ stack.Install (nodes);
   
   for(std::map<FlowId, FlowMonitor::FlowStats>::const_iterator iter = stats.begin() ; iter != stats.end() ; iter++)
   {
-        Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow(iter->first);
-        std::cout<<  "  Flow ID  " << iter->first  <<  "  src Addr  "  <<  t.sourceAddress <<  "  dest Addr  "   <<  t.destinationAddress  <<  std::endl;
-        std::cout << "  Tx Packets:   " <<  iter->second.txPackets<< std::endl;
-        std::cout << "  Rx Packets:   " <<  iter->second.rxPackets<< std::endl;
-        std::cout << "  Lost Packets:   " <<  iter->second.lostPackets<< std::endl;
-        std::cout << "  Throughput: " << iter->second.rxBytes * 8.0 / (iter->second.timeLastRxPacket.GetSeconds () - iter->second.timeFirstRxPacket.GetSeconds ()) / 1000000 << " Kbps" << std::endl;
+    Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow(iter->first);
+    
+    std::cout << " Flow ID " << iter->first << " src Addr " << t.sourceAddress << " dest Addr " << t.destinationAddress << std::endl;
+    std::cout << " Tx Packets " << iter->second.txPackets << std::endl;
+    
   }
   
   Simulator::Destroy ();
