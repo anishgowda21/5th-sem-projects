@@ -11,7 +11,7 @@
 
 char buff[4096],t;
 
-FILE f1*;
+FILE *f1;
 
 int main()
 {
@@ -28,12 +28,12 @@ int main()
 	printf("\nListening...\n");
 	listen(sockfd,5);
 	clength = sizeof(cli_addr);
-	newsockfd = accept(sockfd,(struct sockaddr*)&cli_addr,sizeof(&clength));
+	newsockfd = accept(sockfd,(struct sockaddr*)&cli_addr,&clength);
 	close(sockfd);
 	read(newsockfd,&str,MAX);
 	printf("\nClient Message\nFile Name : %s \n",str);
 	f1 = fopen(str,"r");
-	while(fgets(buff,4096,f1) != null )
+	while(fgets(buff,4096,f1) != NULL )
 	{
 		write(newsockfd,buff,MAX);
 
@@ -41,5 +41,5 @@ int main()
 	printf("\n");
 	fclose(f1);
 	printf("File Transferd\n");
-	return 0
+	return 0;
 }
